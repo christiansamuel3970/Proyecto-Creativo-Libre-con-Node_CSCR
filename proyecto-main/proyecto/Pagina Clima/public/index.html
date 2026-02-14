@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagina Clima</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="ambient ambient-left"></div>
+  <div class="ambient ambient-right"></div>
+
+  <div class="layout">
+    <header class="hero reveal">
+      <p class="eyebrow">Monitoreo en tiempo real</p>
+      <h1>Pagina Clima</h1>
+      <p class="hero-copy">Consulta el clima actual, revisa tendencias y configura alertas para cada ciudad.</p>
+    </header>
+
+    <section class="control-panel reveal delay-1">
+      <label for="cityInput">Ciudad</label>
+      <div class="search-wrap">
+        <input type="text" id="cityInput" placeholder="Escribe una ciudad" onkeypress="if(event.key === 'Enter') searchWeather()" />
+        <button onclick="searchWeather()">Actualizar</button>
+      </div>
+    </section>
+
+    <main class="dashboard">
+      <section id="weatherCard" class="panel weather-panel reveal delay-2">
+        <div class="panel-head">
+          <h2 id="cityName">Cargando...</h2>
+          <span class="status-pill">Vivo</span>
+        </div>
+
+        <div class="temperature-band">
+          <p class="temp"><span id="temperature">--</span><span class="unit">C</span></p>
+          <p id="description">--</p>
+        </div>
+
+        <div class="metrics-grid">
+          <article class="metric-box">
+            <p class="metric-label">Humedad</p>
+            <p class="metric-value"><span id="humidity">--</span>%</p>
+          </article>
+          <article class="metric-box">
+            <p class="metric-label">Viento</p>
+            <p class="metric-value"><span id="windSpeed">--</span> km/h</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel alerts-panel reveal delay-3">
+        <h3>Alertas personalizadas</h3>
+        <p class="panel-copy">Define umbrales para esta ciudad y revisa reglas activas.</p>
+
+        <div class="alerts-form">
+          <select id="conditionSelect">
+            <option value="temperature_below">Temperatura baja</option>
+            <option value="temperature_above">Temperatura alta</option>
+            <option value="humidity_above">Humedad alta</option>
+            <option value="wind_speed">Viento fuerte</option>
+          </select>
+          <input type="number" id="thresholdInput" placeholder="Valor" />
+          <button onclick="createAlert()">Crear alerta</button>
+        </div>
+
+        <div id="alertsList" class="alerts-list"></div>
+      </section>
+
+      <section class="panel chart-panel reveal delay-4">
+        <div class="panel-head">
+          <h3>Tendencia de temperatura</h3>
+          <span class="panel-tag">24h</span>
+        </div>
+        <canvas id="temperatureChart"></canvas>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

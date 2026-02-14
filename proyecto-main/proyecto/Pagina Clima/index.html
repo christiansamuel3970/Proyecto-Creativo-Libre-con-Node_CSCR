@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagina Clima - Dashboard Meteorológico</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .search-section {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .search-section input {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      width: 300px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-section button {
+      padding: 12px 30px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-section button:hover {
+      background: #ff5252;
+    }
+
+    .quick-cities {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .quick-cities button {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .quick-cities button:hover {
+      background: white;
+      color: #667eea;
+    }
+
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .weather-card {
+      text-align: center;
+    }
+
+    .weather-card h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
+
+    .weather-info {
+      margin-top: 20px;
+    }
+
+    .temp {
+      font-size: 3.5em;
+      color: #667eea;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .weather-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .detail-item {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .detail-label {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      color: #333;
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    .alerts-section h3 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .alerts-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .alerts-form select,
+    .alerts-form input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.95em;
+    }
+
+    .alerts-form button {
+      padding: 10px;
+      background: #51cf66;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .alerts-form button:hover {
+      background: #40c057;
+    }
+
+    .alerts-list {
+      margin-top: 15px;
+    }
+
+    .alert-item {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .alert-item button {
+      padding: 5px 10px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    .chart-section {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      margin-bottom: 30px;
+    }
+
+    .chart-section h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: white;
+    }
+
+    .error {
+      background: #ff6b6b;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .stat {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+
+    .stat-value {
+      font-size: 1.8em;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    @media (max-width: 768px) {
+      .weather-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .search-section input {
+        width: 100%;
+      }
+
+      header h1 {
+        font-size: 1.8em;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .comparison-section {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      margin-bottom: 30px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .comparison-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .comparison-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .comparison-card h4 {
+      margin-bottom: 10px;
+    }
+
+    .comparison-temp {
+      font-size: 2em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌤️ Pagina Clima</h1>
+      <p>Dashboard meteorológico en tiempo real - Sin descargas necesarias</p>
+    </header>
+
+    <div id="errorMessage" class="error" style="display: none;"></div>
+
+    <div class="search-section">
+      <input 
+        type="text" 
+        id="cityInput" 
+        placeholder="Ingresa nombre de ciudad (ej: Madrid, Barcelona, Nueva York)..."
+        onkeypress="if(event.key === 'Enter') searchWeather()"
+      />
+      <button onclick="searchWeather()">🔍 Buscar</button>
+    </div>
+
+    <div class="quick-cities">
+      <button onclick="loadCity('Madrid')">Madrid</button>
+      <button onclick="loadCity('Barcelona')">Barcelona</button>
+      <button onclick="loadCity('Valencia')">Valencia</button>
+      <button onclick="loadCity('Sevilla')">Sevilla</button>
+      <button onclick="loadCity('Nueva York')">Nueva York</button>
+      <button onclick="loadCity('Londres')">Londres</button>
+      <button onclick="loadCity('París')">París</button>
+      <button onclick="loadCity('Tokio')">Tokio</button>
+    </div>
+
+    <div class="weather-grid">
+      <div class="card weather-card">
+        <h2 id="cityName">Cargando...</h2>
+        <div class="temp"><span id="temperature">--</span>°C</div>
+        <div id="description" style="font-size: 1.2em; color: #666; margin-bottom: 20px;">--</div>
+        
+        <div class="weather-details">
+          <div class="detail-item">
+            <div class="detail-label">💧 Humedad</div>
+            <div class="detail-value"><span id="humidity">--</span>%</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">💨 Viento</div>
+            <div class="detail-value"><span id="windSpeed">--</span> km/h</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">🌡️ Sensación</div>
+            <div class="detail-value"><span id="feelsLike">--</span>°C</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">⬆️ Máxima</div>
+            <div class="detail-value"><span id="tempMax">--</span>°C</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">⬇️ Mínima</div>
+            <div class="detail-value"><span id="tempMin">--</span>°C</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">🔽 Presión</div>
+            <div class="detail-value"><span id="pressure">--</span> mb</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card alerts-section">
+        <h3>⚠️ Crear Alerta Personalizada</h3>
+        <div class="alerts-form">
+          <select id="conditionSelect">
+            <option value="">-- Selecciona condición --</option>
+            <option value="temperature_above">Temperatura por encima de</option>
+            <option value="temperature_below">Temperatura por debajo de</option>
+            <option value="humidity_above">Humedad por encima de</option>
+            <option value="wind_speed">Velocidad de viento superior a</option>
+          </select>
+          <input 
+            type="number" 
+            id="thresholdInput" 
+            placeholder="Valor numérico..."
+            step="0.1"
+          />
+          <button onclick="createAlert()">✅ Crear Alerta</button>
+        </div>
+
+        <div class="alerts-list" id="alertsList"></div>
+      </div>
+    </div>
+
+    <div class="comparison-section">
+      <h2>🌍 Comparar Ciudades</h2>
+      <div class="comparison-grid" id="comparisonGrid"></div>
+    </div>
+
+    <div class="chart-section">
+      <h2>📊 Gráfico de Tendencias (Últimas 24 horas)</h2>
+      <canvas id="temperatureChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let currentCity = 'Madrid';
+    let weatherHistory = [];
+    let alerts = JSON.parse(localStorage.getItem('weatherAlerts')) || [];
+    let comparisonCities = JSON.parse(localStorage.getItem('comparisonCities')) || [];
+    let temperatureChart = null;
+
+    // Función para obtener clima de Open-Meteo (API gratuita sin autenticación)
+    async function getWeather(city) {
+      try {
+        // Obtener coordenadas usando geocoding
+        const geoResponse = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=es&format=json`
+        );
+        const geoData = await geoResponse.json();
+
+        if (!geoData.results || geoData.results.length === 0) {
+          throw new Error(`Ciudad "${city}" no encontrada`);
+        }
+
+        const { latitude, longitude, name, country } = geoData.results[0];
+
+        // Obtener clima actual y pronóstico
+        const weatherResponse = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl&hourly=temperature_2m&temperature_unit=celsius&wind_speed_unit=kmh&timezone=auto`
+        );
+        const weatherData = await weatherResponse.json();
+
+        const current = weatherData.current;
+        const cityDisplay = `${name}, ${country}`;
+
+        const weatherDescription = getWeatherDescription(current.weather_code);
+
+        return {
+          city: cityDisplay,
+          temperature: current.temperature_2m,
+          feelsLike: current.apparent_temperature,
+          humidity: current.relative_humidity_2m,
+          pressure: current.pressure_msl,
+          windSpeed: current.wind_speed_10m,
+          description: weatherDescription,
+          hourly: weatherData.hourly.temperature_2m.slice(0, 24),
+          lat: latitude,
+          lon: longitude,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        showError(error.message);
+        throw error;
+      }
+    }
+
+    // Descripción del clima según código WMO
+    function getWeatherDescription(code) {
+      const descriptions = {
+        0: '☀️ Despejado',
+        1: '🌤️ Mayormente despejado',
+        2: '⛅ Parcialmente nublado',
+        3: '☁️ Nublado',
+        45: '🌫️ Niebla',
+        48: '🌫️ Niebla escarcha',
+        51: '🌧️ Llovizna ligera',
+        53: '🌧️ Llovizna moderada',
+        55: '🌧️ Llovizna densa',
+        61: '🌧️ Lluvia ligera',
+        63: '🌧️ Lluvia moderada',
+        65: '🌧️ Lluvia fuerte',
+        71: '❄️ Nieve ligera',
+        73: '❄️ Nieve moderada',
+        75: '❄️ Nieve fuerte',
+        77: '❄️ Copos de nieve',
+        80: '🌧️ Chubascos ligeros',
+        81: '🌧️ Chubascos moderados',
+        82: '🌧️ Chubascos violentos',
+        85: '❄️ Aguanieve ligera',
+        86: '❄️ Aguanieve fuerte',
+        95: '⛈️ Tormenta',
+        96: '⛈️ Tormenta con granizo',
+        99: '⛈️ Tormenta fuerte'
+      };
+      return descriptions[code] || '🌡️ Desconocido';
+    }
+
+    // Actualizar UI con datos del clima
+    function updateWeatherUI(data) {
+      document.getElementById('cityName').textContent = data.city;
+      document.getElementById('temperature').textContent = Math.round(data.temperature);
+      document.getElementById('feelsLike').textContent = Math.round(data.feelsLike);
+      document.getElementById('description').textContent = data.description;
+      document.getElementById('humidity').textContent = data.humidity;
+      document.getElementById('windSpeed').textContent = Math.round(data.windSpeed);
+      document.getElementById('pressure').textContent = Math.round(data.pressure);
+      
+      // Guardar en historial
+      weatherHistory.push({
+        temperature: data.temperature,
+        timestamp: new Date(),
+        hourly: data.hourly
+      });
+
+      if (weatherHistory.length > 48) weatherHistory.shift();
+
+      // Actualizar gráfico
+      updateChart();
+      
+      // Validar alertas
+      checkAlerts(data);
+
+      // Guardar en localStorage
+      localStorage.setItem('lastWeather', JSON.stringify(data));
+      localStorage.setItem('weatherHistory', JSON.stringify(weatherHistory));
+
+      hideError();
+    }
+
+    // Buscar ciudad
+    async function searchWeather() {
+      const city = document.getElementById('cityInput').value.trim();
+      if (!city) return;
+      loadCity(city);
+    }
+
+    // Cargar ciudad
+    async function loadCity(city) {
+      try {
+        currentCity = city;
+        document.getElementById('cityInput').value = '';
+        const data = await getWeather(city);
+        updateWeatherUI(data);
+        loadAlerts();
+        updateComparison();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // Crear alerta
+    function createAlert() {
+      const condition = document.getElementById('conditionSelect').value;
+      const threshold = parseFloat(document.getElementById('thresholdInput').value);
+
+      if (!condition || isNaN(threshold)) {
+        alert('Por favor completa todos los campos');
+        return;
+      }
+
+      const alert = {
+        id: Date.now(),
+        city: currentCity,
+        condition,
+        threshold,
+        createdAt: new Date().toLocaleString()
+      };
+
+      alerts.push(alert);
+      localStorage.setItem('weatherAlerts', JSON.stringify(alerts));
+
+      document.getElementById('conditionSelect').value = '';
+      document.getElementById('thresholdInput').value = '';
+
+      loadAlerts();
+    }
+
+    // Cargar alertas
+    function loadAlerts() {
+      const alertsList = document.getElementById('alertsList');
+      const cityAlerts = alerts.filter(a => a.city === currentCity);
+
+      if (cityAlerts.length === 0) {
+        alertsList.innerHTML = '<p style="text-align: center; color: #999;">Sin alertas configuradas</p>';
+        return;
+      }
+
+      alertsList.innerHTML = cityAlerts.map(alert => `
+        <div class="alert-item">
+          <span>
+            <strong>${getAlertLabel(alert.condition)}</strong> ${alert.threshold}
+            <br><small>${alert.createdAt}</small>
+          </span>
+          <button onclick="deleteAlert(${alert.id})">Eliminar</button>
+        </div>
+      `).join('');
+    }
+
+    // Obtener etiqueta de alerta
+    function getAlertLabel(condition) {
+      const labels = {
+        'temperature_above': '🌡️ Temp. encima de',
+        'temperature_below': '❄️ Temp. debajo de',
+        'humidity_above': '💧 Humedad sobre',
+        'wind_speed': '💨 Viento sobre'
+      };
+      return labels[condition] || condition;
+    }
+
+    // Validar alertas
+    function checkAlerts(data) {
+      const cityAlerts = alerts.filter(a => a.city === data.city);
+
+      cityAlerts.forEach(alert => {
+        let triggered = false;
+
+        switch (alert.condition) {
+          case 'temperature_above':
+            triggered = data.temperature > alert.threshold;
+            break;
+          case 'temperature_below':
+            triggered = data.temperature < alert.threshold;
+            break;
+          case 'humidity_above':
+            triggered = data.humidity > alert.threshold;
+            break;
+          case 'wind_speed':
+            triggered = data.windSpeed > alert.threshold;
+            break;
+        }
+
+        if (triggered) {
+          notifyAlert(alert, data);
+        }
+      });
+    }
+
+    // Notificar alerta
+    function notifyAlert(alert, data) {
+      const message = `⚠️ Alerta en ${data.city}: ${getAlertLabel(alert.condition)} ${alert.threshold}`;
+      
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Pagina Clima', { body: message });
+      }
+
+      console.log(message);
+    }
+
+    // Eliminar alerta
+    function deleteAlert(id) {
+      alerts = alerts.filter(a => a.id !== id);
+      localStorage.setItem('weatherAlerts', JSON.stringify(alerts));
+      loadAlerts();
+    }
+
+    // Actualizar gráfico
+    function updateChart() {
+      const ctx = document.getElementById('temperatureChart').getContext('2d');
+      const labels = weatherHistory.map((_, i) => {
+        const date = new Date();
+        date.setHours(date.getHours() - (weatherHistory.length - i - 1));
+        return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      });
+
+      const temps = weatherHistory.map(h => h.temperature);
+
+      if (temperatureChart) {
+        temperatureChart.destroy();
+      }
+
+      temperatureChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Temperatura (°C)',
+            data: temps,
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4,
+            pointBackgroundColor: '#667eea'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true, position: 'top' },
+            title: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              title: { display: true, text: 'Temperatura (°C)' }
+            }
+          }
+        }
+      });
+    }
+
+    // Comparar ciudades
+    async function updateComparison() {
+      const grid = document.getElementById('comparisonGrid');
+      
+      try {
+        const cityNames = ['Madrid', 'Barcelona', 'Valencia', 'Nueva York'];
+        const results = await Promise.all(
+          cityNames.map(city => getWeather(city).catch(() => null))
+        );
+
+        grid.innerHTML = results
+          .filter(r => r !== null)
+          .map(data => `
+            <div class="comparison-card" onclick="loadCity('${data.city.split(',')[0]}')">
+              <h4>${data.city.split(',')[0]}</h4>
+              <div class="comparison-temp">${Math.round(data.temperature)}°C</div>
+              <div style="font-size: 0.9em; margin-top: 10px;">${data.description}</div>
+            </div>
+          `)
+          .join('');
+      } catch (error) {
+        console.log('Error cargando comparación');
+      }
+    }
+
+    // Mostrar/ocultar errores
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = '❌ ' + message;
+      errorDiv.style.display = 'block';
+    }
+
+    function hideError() {
+      document.getElementById('errorMessage').style.display = 'none';
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      // Solicitar permiso para notificaciones
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
+      loadCity('Madrid');
+      loadAlerts();
+    });
+  </script>
+</body>
+</html>
+
+
